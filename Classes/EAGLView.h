@@ -7,8 +7,9 @@
   Renderer *renderer;
   BOOL animating;
   id displayLink;
-  float fingerLevel[2]; // 指入力レベル
-  float wristLevel[2];  // 手首入力レベル
+  float fingerLevel[2];   // 指入力レベル
+  float wristLevel[3];    // 手首入力レベル
+  float accx, accy, accz; // フィルター済み加速度
 }
 
 @property (readonly, nonatomic, getter=isAnimating) BOOL animating;

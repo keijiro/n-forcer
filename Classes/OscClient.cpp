@@ -55,7 +55,7 @@ void OscClient::SendFingerMessage(int slot, float level) {
   s_pStream->Clear();
 }
 
-void OscClient::SendWristMessage(float pitch, float roll) {
+void OscClient::SendWristMessage(float pitch, float roll, float pull) {
   if (!s_pStream) return;
   // ここからバンドル
   *s_pStream << osc::BeginBundleImmediate;
@@ -65,6 +65,9 @@ void OscClient::SendWristMessage(float pitch, float roll) {
   // roll (0.0 - 1.0) メッセージ
   *s_pStream << osc::BeginMessage((s_basePath + "/wrist/roll").c_str());
   *s_pStream << roll << osc::EndMessage;
+  // pull (0.0 - 1.0) メッセージ
+  *s_pStream << osc::BeginMessage((s_basePath + "/wrist/pull").c_str());
+  *s_pStream << pull << osc::EndMessage;
   // ここまでバンドル
   *s_pStream << osc::EndBundle;
   // 送信とバッファのクリア

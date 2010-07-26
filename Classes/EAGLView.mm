@@ -28,7 +28,8 @@
     animating = FALSE;
     displayLink = nil;
     fingerLevel[0] = fingerLevel[1] = 0;
-    wristLevel[0] = wristLevel[1] = 0;
+    wristLevel[0] = wristLevel[1] = wristLevel[2] = 0;
+    accx = accy = accz = 0;
   }
   return self;
 }
@@ -36,9 +37,10 @@
 - (void)drawView:(id)sender {
   // クリアカラーの設定
   GLfloat level = (fingerLevel[0] + fingerLevel[1]) * 0.5f;
-  GLfloat gadd = level + wristLevel[0] * 0.15f;
-  GLfloat badd = level + wristLevel[1] * 0.15f;
-  [renderer setClearColorRed:level green:(level + gadd) blue:(level + badd)];
+  GLfloat r = level + wristLevel[0] * 0.15f;
+  GLfloat g = level + wristLevel[1] * 0.15f;
+  GLfloat b = level + wristLevel[2] * 0.15f;
+  [renderer setClearColorRed:r green:g blue:b];
   // レンダリング
   [renderer render];
 }
@@ -106,15 +108,18 @@
 // 加速度センサー
 - (void)accelerometer:(UIAccelerometer*)accelerometer
         didAccelerate:(UIAcceleration*)acceleration {
+  // ローパスフィルタ
+  accx = 0.5f * accx + 0.5f * acceleration.x;
+  accy = 0.5f * accy + 0.5f * acceleration.y;
+  accz = 0.5f * accz + 0.5f * acceleration.z;
   // Ｙ軸からピッチ角を算出（水平から上向きに値上昇）
-  float pitch = MAX(MIN(-acceleration.y * 1.1f, 1.0f), 0.0f);
+  wristLevel[0] = MAX(MIN(-accy * 1.1f, 1.0f), 0.0f);
   // Ｚ軸からロール角を算出（水平から上下に値上昇）
-  float roll = MAX(MIN(ABS(acceleration.x) * 1.2f - 0.2f, 1.0f), 0.0f);
-  // ローパスフィルター
-  wristLevel[0] = 0.5f * wristLevel[0] + 0.5f * pitch;
-  wristLevel[1] = 0.5f * wristLevel[1] + 0.5f * roll;
+  wristLevel[1] = MAX(MIN(ABS(accx) * 1.2f - 0.2f, 1.0f), 0.0f);
+  // Ｙ軸からプル角を算出（水平から上向きに値上昇）
+  wristLevel[2] = (accz < 0) ? 0 : MAX(MIN(-accy * 1.2f, 1.0f), 0.0f);
   // メッセージ送信
-  OscClient::SendWristMessage(wristLevel[0], wristLevel[1]);
+  OscClient::SendWristMessage(wristLevel[0], wristLevel[1], wristLevel[2]);
 }
 
 - (void)dealloc {

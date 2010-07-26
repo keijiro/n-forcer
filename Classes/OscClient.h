@@ -7,7 +7,7 @@ public:
   static void Open(const char* pAddress, int port);
   static void Close();
   static void SendFingerMessage(int slot, float level);
-  static void SendWristMessage(float pitch, float roll);
+  static void SendWristMessage(float pitch, float roll, float pull);
 };
 
 #endif
