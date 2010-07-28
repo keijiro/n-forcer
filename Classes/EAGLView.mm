@@ -75,13 +75,18 @@
 // タッチ処理
 - (void)processTouch:(UITouch *)touch isOn:(BOOL)isOn {
   CGPoint pt = [touch locationInView:self];
-  // Ｘ座標からスロット特定
-  NSInteger slot = (pt.x < self.center.x) ? 0 : 1;
-  // Ｙ座標からレベル算出（中央から上に向かって上昇、指離し時はゼロ）
-  float y = isOn ? 1.05f - 1.1f * pt.y / self.center.y : 0.0f;
-  fingerLevel[slot] = MIN(MAX(y, 0.0f), 1.0f);
-  // メッセージ送信
-  OscClient::SendFingerMessage(slot, fingerLevel[slot]);
+  // 特殊入力の判定（スクリーン下部分）
+  if (pt.y > 1.8f * self.center.y) {
+    OscClient::SendSpecialMessage(isOn);
+  } else {
+    // Ｘ座標からスロット特定
+    NSInteger slot = (pt.x < self.center.x) ? 0 : 1;
+    // Ｙ座標からレベル算出（中央から上に向かって上昇、指離し時はゼロ）
+    float y = isOn ? 1.05f - 1.1f * pt.y / self.center.y : 0.0f;
+    fingerLevel[slot] = MIN(MAX(y, 0.0f), 1.0f);
+    // メッセージ送信
+    OscClient::SendFingerMessage(slot, fingerLevel[slot]);
+  }
 }
 
 // タッチ開始

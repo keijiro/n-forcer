@@ -74,3 +74,13 @@ void OscClient::SendWristMessage(float pitch, float roll, float pull) {
   s_pTransmitSocket->Send(s_pStream->Data(), s_pStream->Size());
   s_pStream->Clear();
 }
+
+void OscClient::SendSpecialMessage(bool flag) {
+  if (!s_pStream) return;
+  // special (0.0 / 1.0) メッセージ
+  *s_pStream << osc::BeginMessage((s_basePath + "/special").c_str());
+  *s_pStream << (flag ? 1.0f : 0.0f) << osc::EndMessage;
+  // 送信とバッファのクリア
+  s_pTransmitSocket->Send(s_pStream->Data(), s_pStream->Size());
+  s_pStream->Clear();
+}
