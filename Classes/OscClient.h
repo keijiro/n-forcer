@@ -8,7 +8,6 @@ public:
   static void Close();
   static void SendFingerMessage(int slot, float level);
   static void SendWristMessage(float pitch, float roll, float pull);
-  static void SendSpecialMessage(bool flag);
 };
 
 #endif

@@ -31,25 +31,12 @@ void OscClient::Close() {
 
 void OscClient::SendFingerMessage(int slot, float level) {
   if (!s_pStream) return;
-  // スロットに対応するパスの生成
-  std::string path;
-  {
-    char temp[64];
-    std::snprintf(temp, sizeof temp, "%s/finger/%d/", s_basePath.c_str(), slot);
-    path = temp;
-  }
-  // ここからバンドル
-  *s_pStream << osc::BeginBundleImmediate;
-  // level (0.0 - 1.0) メッセージ
-  if (level > 0.0f) {
-    *s_pStream << osc::BeginMessage((path + "level").c_str());
-    *s_pStream << level << osc::EndMessage;
-  }
-  // touch (0.0 / 1.0) メッセージ
-  *s_pStream << osc::BeginMessage((path + "touch").c_str());
-  *s_pStream << (level > 0.0f ? 1.0f : 0.0f) << osc::EndMessage;
-  // ここまでバンドル
-  *s_pStream << osc::EndBundle;
+  // アドレス
+  char path[64];
+  std::snprintf(path, sizeof path, "%s/finger/%d", s_basePath.c_str(), slot);
+  *s_pStream << osc::BeginMessage(path);
+  // f(-1.0 / 0.0 - 1.0)
+  *s_pStream << level << osc::EndMessage;
   // 送信とバッファのクリア
   s_pTransmitSocket->Send(s_pStream->Data(), s_pStream->Size());
   s_pStream->Clear();
@@ -57,29 +44,10 @@ void OscClient::SendFingerMessage(int slot, float level) {
 
 void OscClient::SendWristMessage(float pitch, float roll, float pull) {
   if (!s_pStream) return;
-  // ここからバンドル
-  *s_pStream << osc::BeginBundleImmediate;
-  // pitch (0.0 - 1.0) メッセージ
-  *s_pStream << osc::BeginMessage((s_basePath + "/wrist/pitch").c_str());
-  *s_pStream << pitch << osc::EndMessage;
-  // roll (0.0 - 1.0) メッセージ
-  *s_pStream << osc::BeginMessage((s_basePath + "/wrist/roll").c_str());
-  *s_pStream << roll << osc::EndMessage;
-  // pull (0.0 - 1.0) メッセージ
-  *s_pStream << osc::BeginMessage((s_basePath + "/wrist/pull").c_str());
-  *s_pStream << pull << osc::EndMessage;
-  // ここまでバンドル
-  *s_pStream << osc::EndBundle;
-  // 送信とバッファのクリア
-  s_pTransmitSocket->Send(s_pStream->Data(), s_pStream->Size());
-  s_pStream->Clear();
-}
-
-void OscClient::SendSpecialMessage(bool flag) {
-  if (!s_pStream) return;
-  // special (0.0 / 1.0) メッセージ
-  *s_pStream << osc::BeginMessage((s_basePath + "/special").c_str());
-  *s_pStream << (flag ? 1.0f : 0.0f) << osc::EndMessage;
+  // アドレス
+  *s_pStream << osc::BeginMessage((s_basePath + "/wrist").c_str());
+  // f(0.0 - 1.0), f(0.0 - 1.0), f(0.0 - 1.0)
+  *s_pStream << pitch << roll << pull << osc::EndMessage;
   // 送信とバッファのクリア
   s_pTransmitSocket->Send(s_pStream->Data(), s_pStream->Size());
   s_pStream->Clear();
